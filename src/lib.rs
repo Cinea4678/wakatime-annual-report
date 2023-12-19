@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::BufReader;
 use anyhow::Result;
 use crate::polars::PolarsReportBuilder;
+use crate::report::NormalReport;
 
 /// 实现了这个trait的实现都可以被用来生成我们的报告
 trait ReportBuilder {
@@ -15,6 +16,9 @@ trait ReportBuilder {
     ///
     /// time_zone: 格式为小时的偏移数（例如，GMT +8 = 8，GMT +8.5 = 8.5）
     fn from_raw_data(data: wakatime::WakaTimeBackupData, year: i32, time_zone: f64) -> Self;
+
+    /// 生成报表
+    fn get_normal_report(&self, timeout: f64) -> NormalReport;
 }
 
 /// 从给定的路径导入JSON

@@ -1,7 +1,11 @@
 //! 使用Polars对大规模的数据进行分析
 
+use std::fs::File;
+use std::time;
 use chrono::{Datelike, FixedOffset, Timelike, TimeZone, Utc};
 use polars::prelude::*;
+use polars::series::ops::NullBehavior;
+use crate::report::NormalReport;
 
 use crate::ReportBuilder;
 use crate::wakatime::WakaTimeBackupData;
@@ -17,7 +21,7 @@ impl ReportBuilder for PolarsReportBuilder {
         let time_zone_offset = FixedOffset::east_opt((time_zone * 3600.0) as i32).unwrap();
 
         let data: Vec<_> = data_raw.days.iter().flat_map(|d| &d.heartbeats)
-            .filter(|h| h.time.is_some() && h.language.is_some())
+            .filter(|h| h.time.is_some())
             .filter(|h| {
                 let time = h.time.unwrap();
                 let t = Utc.timestamp_millis_opt((time * 1000.0) as i64);
@@ -39,7 +43,7 @@ impl ReportBuilder for PolarsReportBuilder {
         let mut year_day_vec: Vec<u32> = get_vec(len);
         let mut weekday_vec: Vec<String> = get_vec(len);
         let mut hour_vec: Vec<u32> = get_vec(len);
-        let mut language_vec: Vec<String> = get_vec(len);
+        let mut language_vec: Vec<Option<String>> = get_vec(len);
         let mut project_vec: Vec<Option<String>> = get_vec(len);
         let mut user_agent_id_vec: Vec<Option<String>> = get_vec(len);
 
@@ -55,7 +59,7 @@ impl ReportBuilder for PolarsReportBuilder {
             weekday_vec.push(t.weekday().to_string());
             hour_vec.push(t.hour());
 
-            language_vec.push(heartbeat.language.clone().unwrap());
+            language_vec.push(heartbeat.language.clone());
             project_vec.push(heartbeat.project.clone());
             user_agent_id_vec.push(heartbeat.user_agent_id.clone());
         }
@@ -67,7 +71,7 @@ impl ReportBuilder for PolarsReportBuilder {
             Series::new("year_day", year_day_vec),
             Series::new("weekday", weekday_vec),
             Series::new("hour", hour_vec),
-            Series::new("language", language_vec
+            Series::new("language", language_vec,
             ),
             Series::new("project", project_vec),
             Series::new("user_agent_id", user_agent_id_vec),
@@ -79,12 +83,47 @@ impl ReportBuilder for PolarsReportBuilder {
             time_zone_offset,
         }
     }
+
+    fn get_normal_report(&self, timeout: f64) -> NormalReport {
+        let lazy = self.df.head(Some(10)).clone().lazy();
+
+
+        todo!()
+    }
 }
 
 impl PolarsReportBuilder {
     pub fn test(&self) {
         println!("Record count: {}", self.df.shape().0);
-        let res = self.df.head(Some(3));
-        println!("{}", res);
+        let lf = self.df.clone().lazy();
+        get_total_time(&lf, 900.0);
     }
+}
+
+/// 本函数用于将心跳数据转换为编程总时间
+///
+/// 算法参考官方FAQ：<a>https://wakatime.com/faq#timeout</a>
+fn get_total_time(lf: &LazyFrame, timeout: f64) {
+    let d = lf.clone()
+        .select([
+            col("time_raw"),
+            col("time_raw").diff(1, NullBehavior::Ignore).alias("diff")
+        ])
+        .filter(
+            col("diff").lt(timeout)
+        )
+        .select([
+            col("diff").sum().alias("sum_diff")
+        ])
+        .collect().unwrap();
+
+    println!("{}", d);
+
+    if let AnyValue::Float64(sum) = d.get(0).unwrap()[0] {
+        let duration = time::Duration::from_millis((sum * 1000.0) as u64);
+        let duration = chrono::Duration::from_std(duration).unwrap();
+        println!("Total duration: {} hours {} minutes {} seconds", duration.num_hours(), duration.num_minutes() % 60, duration.num_seconds() % 60);
+    }
+
+    ()
 }
