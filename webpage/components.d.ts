@@ -8,6 +8,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AButton: typeof import('ant-design-vue/es')['Button']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    ASpin: typeof import('ant-design-vue/es')['Spin']
+    LanguageTime: typeof import('./src/components/report/LanguageTime.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
+    TotalTime: typeof import('./src/components/report/TotalTime.vue')['default']
+    TotalTimeView: typeof import('./src/components/report/TotalTimeView.vue')['default']
   }
 }
