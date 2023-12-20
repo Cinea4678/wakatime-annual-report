@@ -30,14 +30,12 @@ pub fn read_json_from_file(path: &str) -> Result<wakatime::WakaTimeBackupData> {
 }
 
 /// 制作报告
-pub fn get_analyses_report_data(data: wakatime::WakaTimeBackupData, year: i32, time_zone: f64, time_out: f64) -> Result<()> {
+pub fn get_analyses_report_data(data: wakatime::WakaTimeBackupData, year: i32, time_zone: f64, time_out: f64) -> NormalReport {
 
-    let user_data = data.user.clone(); // 保留一份用户数据备用
+    let _user_data = data.user.clone(); // 保留一份用户数据备用
 
     let report_builder = PolarsReportBuilder::from_raw_data(data, year, time_zone, time_out);
 
-    report_builder.test();
-
-    Ok(())
+    report_builder.get_normal_report()
 }
 

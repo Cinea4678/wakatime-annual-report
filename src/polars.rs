@@ -88,26 +88,27 @@ impl HumanTimeDecorator for LazyFrame {
 }
 
 /// 本trait用于将两列的DataFrame（通常是Key - Value的形式），保留顺序转换成元组列表
-trait AsTupleVec<T> {
-    fn as_tuple_vec<R>(&self) -> Vec<(T, R)>
-        where R: polars::export::num::NumCast;
+trait AsTupleVec {
+    fn as_tuple_vec<F, T, R>(&self, get_key: F) -> Vec<(T, R)>
+        where F: Fn(AnyValue) -> T, R: polars::export::num::NumCast;
 }
 
-impl AsTupleVec<String> for DataFrame {
-    fn as_tuple_vec<R>(&self) -> Vec<(String, R)>
-        where R: polars::export::num::NumCast
+impl AsTupleVec for DataFrame {
+    fn as_tuple_vec<F, T, R>(&self, get_key: F) -> Vec<(T, R)>
+        where F: Fn(AnyValue) -> T, R: polars::export::num::NumCast
     {
         if self.shape().1 != 2 {
             error!("function as_tuple_vec() should be used in a DataFrame which has exactly 2 columns.");
             panic!()
         }
 
-        let mut vec: Vec<(String, R)> = Vec::new();
+        let mut vec: Vec<(T, R)> = Vec::new();
 
         let len = self.shape().0;
         (0..len).for_each(|i| {
             let v = self.get(i).unwrap();
-            vec.push((String::from(v[0].clone().get_str().unwrap_or("unknown")), v[1].clone().try_extract().unwrap()))
+
+            vec.push((get_key(v[0].clone()), v[1].clone().try_extract().unwrap()))
         });
 
 
@@ -192,25 +193,66 @@ impl ReportBuilder for PolarsReportBuilder {
     }
 
     fn get_normal_report(&self) -> NormalReport {
+        let year = self.year;
+
         let total_time = self.get_total_time();
 
-        let language_time_df = self.get_time_by_language();
-        let language_time = language_time_df.as_tuple_vec::<f64>();
+        let time_by_language_df = self.get_time_by_language();
+        let time_by_language: Vec<(_, f64)> = time_by_language_df.as_tuple_vec(|v| {
+            String::from(v.get_str().unwrap())
+        });
 
+        let time_by_project_df = self.get_time_by_project();
+        let time_by_project: Vec<(_, f64)> = time_by_project_df.as_tuple_vec(|v| {
+            String::from(v.get_str().unwrap())
+        });
 
-        todo!()
+        let time_by_month_df = self.get_time_by_month();
+        let time_by_month: Vec<(_, f64)> = time_by_month_df.as_tuple_vec(|v| {
+            v.try_extract::<i32>().unwrap()
+        });
+
+        let time_by_month_day_df = self.get_time_by_month_day();
+        let time_by_month_day: Vec<(_, f64)> = time_by_month_day_df.as_tuple_vec(|v| {
+            v.try_extract::<i32>().unwrap()
+        });
+
+        let time_by_weekday_df = self.get_time_by_weekday();
+        let time_by_weekday: Vec<(_, f64)> = time_by_weekday_df.as_tuple_vec(|v| {
+            String::from(v.get_str().unwrap())
+        });
+
+        let time_by_day_df = self.get_time_by_day();
+        let time_by_day: Vec<(_, f64)> = time_by_day_df.as_tuple_vec(|v| {
+            v.try_extract::<i32>().unwrap()
+        });
+
+        let time_by_hours_df = self.get_time_by_hours();
+        let time_by_hours: Vec<(_, f64)> = time_by_hours_df.as_tuple_vec(|v| {
+            v.try_extract::<i32>().unwrap()
+        });
+
+        let late_night_time_df = self.get_late_nights();
+        let late_night_time: Vec<(_, f64)> = late_night_time_df.as_tuple_vec(|v| {
+            v.try_extract::<i32>().unwrap()
+        });
+
+        NormalReport {
+            year,
+            total_time,
+            time_by_language,
+            time_by_project,
+            time_by_month,
+            time_by_month_day,
+            time_by_weekday,
+            time_by_day,
+            time_by_hours,
+            late_night_time,
+        }
     }
 }
 
 impl PolarsReportBuilder {
-    pub fn test(&self) {
-        println!("Record count: {}", self.df.shape().0);
-        let l = self.get_time_by_language();
-        let language_time = l.as_tuple_vec::<f64>();
-
-        println!("{}", serde_json::to_string(&language_time).unwrap());
-    }
-
     pub fn get_total_time(&self) -> f64 {
         return self.df.time_sum(self.time_out);
     }
@@ -221,6 +263,9 @@ impl PolarsReportBuilder {
         let time_out = self.time_out;
 
         let out = lf
+            .filter(
+                col("language").is_not_null()
+            )
             .group_by(["language"])
             .agg([
                 col("time_raw").apply(move |s| {
@@ -233,6 +278,225 @@ impl PolarsReportBuilder {
                 descending: true,
                 ..Default::default()
             })
+            .limit(15)
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_project(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("project").is_not_null()
+            )
+            .group_by(["project"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .limit(15)
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_month(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("month").is_not_null()
+            )
+            .group_by(["month"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_month_day(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("day").is_not_null()
+            )
+            .group_by(["day"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_weekday(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("weekday").is_not_null()
+            )
+            .group_by(["weekday"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_day(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("year_day").is_not_null()
+            )
+            .group_by(["year_day"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .limit(5)
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_time_by_hours(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("hour_min").is_not_null()
+            )
+            .with_column(
+                col("hour_min")
+                    .map(
+                        |series|
+                            Ok(Some(
+                                series.u32()?
+                                    .into_iter()
+                                    .map(|opt_v| match opt_v {
+                                        Some(v) if v / 100 <= 12 => Some(v / 100),
+                                        _ => None
+                                    })
+                                    .collect::<UInt32Chunked>()
+                                    .into_series()
+                            )),
+                        GetOutput::from_type(DataType::UInt32),
+                    )
+                    .alias("hour")
+            )
+            .filter(
+                col("hour").is_not_null()
+            )
+            .group_by(["hour"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .collect()
+            .unwrap();
+
+        out
+    }
+
+    pub fn get_late_nights(&self) -> DataFrame {
+        let lf = self.df.clone().lazy();
+
+        let time_out = self.time_out;
+
+        let out = lf
+            .filter(
+                col("hour_min").is_not_null()
+            )
+            .filter(
+                col("hour_min").lt(530)     // 5:30之前算熬夜
+            )
+            .group_by(["year_day"])
+            .agg([
+                col("time_raw").apply(move |s| {
+                    let res = s.time_sum(time_out);
+                    Ok(Some(Series::new("", &[res])))
+                }, GetOutput::float_type()).alias("time_sum").first()
+            ])
+            // .add_human_time("time_sum")
+            .sort("time_sum", SortOptions {
+                descending: true,
+                ..Default::default()
+            })
+            .filter(
+                col("time_sum").gt(0)
+            )
             .collect()
             .unwrap();
 
