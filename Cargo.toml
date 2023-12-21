@@ -5,14 +5,21 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[build-dependencies]
+tar = "0.4.40"
+flate2 = "1.0.28"
 
 [dependencies]
 anyhow = "1.0.75"
 chrono = "0.4.31"
 clap = { version = "4.4.11", features = ["derive"] }
+dirs = "5.0.1"
+file-serve = "0.3.0"
+flate2 = "1.0.28"
 log = "0.4.20"
 polars = { version = "0.35.4", features = ["lazy","diff","strings","polars-io"] }
 pretty_env_logger = "0.5.0"
 serde = "1.0.193"
 serde_derive = "1.0.193"
 serde_json = "1.0.108"
+tar = "0.4.40"
