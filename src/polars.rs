@@ -119,7 +119,6 @@ impl AsTupleVec for DataFrame {
 pub struct PolarsReportBuilder {
     df: DataFrame,
     year: i32,
-    time_zone_offset: FixedOffset,
     time_out: f64,
 }
 
@@ -187,7 +186,6 @@ impl ReportBuilder for PolarsReportBuilder {
         Self {
             df,
             year,
-            time_zone_offset,
             time_out,
         }
     }

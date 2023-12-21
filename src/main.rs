@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     println!("{}", "✨Please wait... We are reading the file...".yellow());
     let data = read_json_from_file(&args.input)?;
 
-    let mut year = 0;
+    let year: i32;
     if args.year.is_some() {
         year = args.year.unwrap();
     } else {
