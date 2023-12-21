@@ -13,6 +13,7 @@ flate2 = "1.0.28"
 anyhow = "1.0.75"
 chrono = "0.4.31"
 clap = { version = "4.4.11", features = ["derive"] }
+colored = "2.1.0"
 dirs = "5.0.1"
 file-serve = "0.3.0"
 flate2 = "1.0.28"
