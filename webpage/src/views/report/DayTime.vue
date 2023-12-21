@@ -22,7 +22,6 @@ import {
 import Data = wakaTimeWebapp.Data
 import dayjs from "dayjs"
 import { FormatSecondsHtml } from "@/utils/time.ts"
-import ProjectComponent from "@/components/report/ProjectComponent.vue"
 import DayComponent from "@/components/report/DayComponent.vue"
 
 const data = inject<Ref<Data | undefined>>("data") as Ref<Data | undefined>
@@ -246,7 +245,9 @@ onresize = () => {
 
 <template>
   <div class="flex flex-wrap gap-5">
-    <div class="card w-[40vw] max-w-[500px] h-[220px]">
+    <div
+      class="card w-[40vw] max-w-[500px] h-[220px] animate__animated animate__fadeInDown"
+    >
       <div class="card-title">你最忙碌的一个月</div>
       <div class="font-normal">
         <p>
@@ -264,7 +265,9 @@ onresize = () => {
       </div>
       <div ref="monthChart" class="h-[100px] w-full"></div>
     </div>
-    <div class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px]">
+    <div
+      class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px] animate__animated animate__fadeInDown"
+    >
       <div class="card-title">你每周最忙碌的一天</div>
       <div class="font-normal">
         <p>
@@ -286,7 +289,9 @@ onresize = () => {
         <div ref="weekdayChart" class="h-[100px] w-full"></div>
       </div>
     </div>
-    <div class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px]">
+    <div
+      class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px] animate__animated animate__fadeInDown animate__delay-1s"
+    >
       <div class="card-title">你每个月最忙碌的一天</div>
       <div class="font-normal">
         <p>
@@ -303,7 +308,9 @@ onresize = () => {
       </div>
       <div ref="monthDayChart" class="h-[130px] w-full"></div>
     </div>
-    <div class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px]">
+    <div
+      class="card w-[40vw] max-w-[500px] h-[30vh] max-h-[220px] animate__animated animate__fadeInDown animate__delay-1s"
+    >
       <div class="card-title">你全年最忙碌的一天</div>
       <div class="font-normal">
         <p>
@@ -321,13 +328,15 @@ onresize = () => {
           />的记录
         </p>
       </div>
-      <div class="my-4 flex flex-wrap gap-3">
-        <day-component
-          v-for="d in data?.time_by_day"
-          :key="d[0]"
-          :day="dayjs(dayjsBaseDay).dayOfYear(d[0]).format('M月D日')"
-          :time="d[1]"
-        />
+      <div class="h-[130px] w-full overflow-scroll">
+        <div class="my-4 flex flex-wrap gap-3">
+          <day-component
+            v-for="d in data?.time_by_day"
+            :key="d[0]"
+            :day="dayjs(dayjsBaseDay).dayOfYear(d[0]).format('M月D日')"
+            :time="d[1]"
+          />
+        </div>
       </div>
     </div>
   </div>

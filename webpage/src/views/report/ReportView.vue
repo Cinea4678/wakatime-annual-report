@@ -2,7 +2,6 @@
 import { computed, defineAsyncComponent, onMounted, ref } from "vue"
 import { useWindowSize } from "@vueuse/core"
 import { useRoute } from "vue-router"
-import ProjectComponent from "@/components/report/ProjectComponent.vue"
 
 const { width } = useWindowSize()
 const lg = computed(() => width.value >= 1024)
@@ -31,6 +30,12 @@ const pages = [
     name: "月日周",
     component: defineAsyncComponent(() => import("@/views/report/DayTime.vue")),
   },
+  {
+    name: "深夜加班",
+    component: defineAsyncComponent(
+      () => import("@/views/report/LateWorkTime.vue"),
+    ),
+  },
 ]
 
 const route = useRoute()
@@ -53,7 +58,7 @@ onMounted(() => {
     </div>
     <div class="absolute top-[90vh] flex gap-3 items-center">
       <a-button
-        v-show="page > 0"
+        :disabled="page == 0"
         :size="lg ? 'large' : 'middle'"
         @click="page--"
       >

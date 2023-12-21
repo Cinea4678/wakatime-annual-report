@@ -10,12 +10,8 @@ declare module 'vue' {
     AButton: typeof import('ant-design-vue/es')['Button']
     ASpin: typeof import('ant-design-vue/es')['Spin']
     DayComponent: typeof import('./src/components/report/DayComponent.vue')['default']
-    LanguageTime: typeof import('./src/components/report/LanguageTime.vue')['default']
     ProjectComponent: typeof import('./src/components/report/ProjectComponent.vue')['default']
-    ProjectTime: typeof import('./src/components/report/ProjectTime.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TotalTime: typeof import('./src/components/report/TotalTime.vue')['default']
-    TotalTimeView: typeof import('./src/components/report/TotalTimeView.vue')['default']
   }
 }

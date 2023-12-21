@@ -8,9 +8,11 @@ import "animate.css/animate.min.css"
 import "dayjs/locale/zh"
 import LocalizedFormat from "dayjs/plugin/localizedFormat"
 import DayOfYear from "dayjs/plugin/dayOfYear"
+import Weekday from "dayjs/plugin/weekday"
 import dayjs from "dayjs"
 dayjs.extend(LocalizedFormat)
 dayjs.extend(DayOfYear)
+dayjs.extend(Weekday)
 dayjs.locale("zh")
 
 console.log(dayjs().format("LLL"))

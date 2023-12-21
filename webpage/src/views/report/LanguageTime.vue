@@ -28,10 +28,10 @@ const chartOption = computed(
   () =>
     ({
       grid: {
-        top: 10,
+        top: 20,
         bottom: 30,
         left: 100,
-        right: 100,
+        right: 10,
       },
       xAxis: {
         type: "value",
@@ -103,15 +103,23 @@ onresize = () => {
         <span class="d" v-html="FormatSecondsHtml(languageTime[0][1], true)" />
       </p>
     </div>
-    <div class="animate__delay-1s animate__animated animate__fadeInDown">
-      <p class="mt-10 text-xl lg:text-3xl">下面是你常用的语言排行：</p>
-      <div
-        ref="chart"
-        class="mt-10"
-        style="height: 30vh; max-height: 350px; width: 90vw; max-width: 700px"
-      ></div>
+  </div>
+  <div
+    class="mt-10 flex animate__delay-1s animate__animated animate__fadeInDown"
+  >
+    <div class="card w-[60vw] max-w-[800px] h-[360px]">
+      <p class="card-title">你最常用的语言排行</p>
+      <div ref="chart" class="w-full h-[320px]"></div>
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.card {
+  @apply px-3 py-2 bg-white/20 border-white/20 border backdrop-blur rounded-2xl;
+}
+
+.card-title {
+  @apply text-xl font-bold;
+}
+</style>
