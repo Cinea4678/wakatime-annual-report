@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import { computed, defineAsyncComponent, ref } from "vue"
+import { computed, defineAsyncComponent, onMounted, ref } from "vue"
 import { useWindowSize } from "@vueuse/core"
+import { useRoute } from "vue-router"
+import ProjectComponent from "@/components/report/ProjectComponent.vue"
 
 const { width } = useWindowSize()
 const lg = computed(() => width.value >= 1024)
@@ -10,16 +12,35 @@ const pages = [
   {
     name: "总时间",
     component: defineAsyncComponent(
-      () => import("@/components/report/TotalTime.vue")
-    )
+      () => import("@/views/report/TotalTime.vue"),
+    ),
   },
   {
     name: "语言",
     component: defineAsyncComponent(
-      () => import("@/components/report/LanguageTime.vue")
-    )
-  }
+      () => import("@/views/report/LanguageTime.vue"),
+    ),
+  },
+  {
+    name: "项目",
+    component: defineAsyncComponent(
+      () => import("@/views/report/ProjectTime.vue"),
+    ),
+  },
+  {
+    name: "月日周",
+    component: defineAsyncComponent(() => import("@/views/report/DayTime.vue")),
+  },
 ]
+
+const route = useRoute()
+onMounted(() => {
+  const initPage = route.query["page"]
+  console.log("IP:", initPage)
+  if (initPage != null) {
+    page.value = Number(initPage)
+  }
+})
 </script>
 
 <template>
@@ -31,10 +52,18 @@ const pages = [
       </div>
     </div>
     <div class="absolute top-[90vh] flex gap-3 items-center">
-      <a-button v-show="page > 0" :size="lg ? 'large' : 'middle'" @click="page--">
+      <a-button
+        v-show="page > 0"
+        :size="lg ? 'large' : 'middle'"
+        @click="page--"
+      >
         上一页
       </a-button>
-      <a-button v-if="page < pages.length - 1" :size="lg ? 'large' : 'middle'" @click="page++">
+      <a-button
+        v-if="page < pages.length - 1"
+        :size="lg ? 'large' : 'middle'"
+        @click="page++"
+      >
         下一页
       </a-button>
       <div v-else class="font-light">已是最后一页</div>

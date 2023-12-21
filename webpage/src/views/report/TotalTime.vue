@@ -20,7 +20,7 @@ const describeWord = computed(() => {
 </script>
 
 <template>
-  <div class="pt-[5vh] text-4xl font-extrabold animate__animated animate__fadeInDown">
+  <div class="pt-[5vh] text-2xl lg:text-4xl font-extrabold animate__animated animate__fadeInDown">
     <p>在过去的{{ data?.year }}年里，你在代码上花了</p>
     <p
       class="mt-3 d"

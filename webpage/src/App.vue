@@ -1,36 +1,36 @@
 <script lang="ts" setup>
-import { onMounted, provide, ref } from "vue";
-import axios from "axios";
-import { useRouter } from "vue-router";
-import Data = wakaTimeWebapp.Data;
+import { onMounted, provide, ref } from "vue"
+import axios from "axios"
+import { useRouter } from "vue-router"
+import Data = wakaTimeWebapp.Data
 
-const router = useRouter();
+const router = useRouter()
 
-const loading = ref(false);
-const data = ref<Data | undefined>(undefined);
-provide("data", data);
+const loading = ref(false)
+const data = ref<Data | undefined>(undefined)
+provide("data", data)
 
 onMounted(async () => {
-  loading.value = true;
+  // loading.value = true;
 
   const handleError = () => {
-    router.push("/error");
-  };
+    router.push("/error")
+  }
 
   try {
-    let res = await axios.get("/output.json");
+    let res = await axios.get("/output.json")
     if (res.data.year != undefined) {
-      data.value = res.data as Data;
+      data.value = res.data as Data
     } else {
-      handleError();
+      handleError()
     }
   } catch (e) {
-    console.log(e);
-    handleError();
+    console.log(e)
+    handleError()
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-});
+})
 </script>
 
 <template>
