@@ -25,11 +25,11 @@ struct Args {
     year: Option<i32>,
 
     /// Your time zone, default as 8 (UTC+8).
-    #[arg(long = "time-zone", short, default_value = "8.0")]
+    #[arg(long = "time-zone", default_value = "8.0")]
     time_zone: f64,
 
     /// Timeout of the WakaTime's time calculating. See WakaTime's FAQ for more info.
-    #[arg(long = "time-zone", short, default_value = "900.0")]
+    #[arg(long = "timeout", short, default_value = "900.0")]
     time_out: f64,
 
     /// The host address of the web server
