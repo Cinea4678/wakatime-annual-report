@@ -50,7 +50,7 @@ fn main() -> Result<()> {
         host::host_init();
     }
 
-    println!("{}", "✨Please wait... We are reading the file...".yellow());
+    println!("{}", "✨ Please wait... We are reading the file...".yellow());
     let data = read_json_from_file(&args.input)?;
 
     let year: i32;
@@ -61,9 +61,9 @@ fn main() -> Result<()> {
         if years.len() == 1 {
             year = years[0];
         } else {
-            println!("{} {}", "🗓We have found different years in your record:".blue(), years.iter().map(|y| y.to_string()).collect::<Vec<_>>().join(", "));
+            println!("{} {}", "🗓 We have found different years in your record:".blue(), years.iter().map(|y| y.to_string()).collect::<Vec<_>>().join(", "));
             loop {
-                print!("  Please choose one: ");
+                print!("   Please choose one: ");
                 stdout().flush()?;
                 let mut line = String::new();
                 if let Ok(n) = stdin().read_line(&mut line) {
@@ -80,19 +80,19 @@ fn main() -> Result<()> {
         }
     }
 
-    println!("{}", format!("🔍Analysing your {}...", year).green());
+    println!("{}", format!("🔍 Analysing your {}...", year).green());
 
-    println!("  {} If you are not in China, remember to configure the time zone in the arguments!", "Tips".green());
+    println!("   {} If you are not in China, remember to configure the time zone in the arguments!", "Tips".green());
 
     let data = get_analyses_report_data(data, year, args.time_zone, args.timeout);
 
     if args.no_serve {
         serde_json::to_writer(File::create("./output.json")?, &data)?;
-        println!("{} {} {}", "😄The".green(), "output.json".blue(), "is successfully generated.".green())
+        println!("{} {} {}", "😄 The".green(), "output.json".blue(), "is successfully generated.".green())
     } else {
-        println!("{}", "😄The analysis is successful and we are starting the server for you...".green());
-        println!("{} {}", "🌍Open in your browser: ".green(), format!("http://localhost:{}", args.port).blue());
-        println!("{}", "  And click Ctrl+C to exit.".green());
+        println!("{}", "😄 The analysis is successful and we are starting the server for you...".green());
+        println!("{} {}", "🌍 Open in your browser: ".green(), format!("http://localhost:{}", args.port).blue());
+        println!("{}", "   And click Ctrl+C to exit.".green());
 
         host::host(&args.host, args.port, data)?;
     }
