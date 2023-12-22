@@ -119,7 +119,7 @@ impl AsTupleVec for DataFrame {
 pub struct PolarsReportBuilder {
     df: DataFrame,
     year: i32,
-    time_out: f64,
+    timeout: f64,
 }
 
 impl ReportBuilder for PolarsReportBuilder {
@@ -186,7 +186,7 @@ impl ReportBuilder for PolarsReportBuilder {
         Self {
             df,
             year,
-            time_out,
+            timeout: time_out,
         }
     }
 
@@ -252,13 +252,13 @@ impl ReportBuilder for PolarsReportBuilder {
 
 impl PolarsReportBuilder {
     pub fn get_total_time(&self) -> f64 {
-        return self.df.time_sum(self.time_out);
+        return self.df.time_sum(self.timeout);
     }
 
     pub fn get_time_by_language(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -286,7 +286,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_project(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -314,7 +314,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_month(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -341,7 +341,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_month_day(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -368,7 +368,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_weekday(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -395,7 +395,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_day(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -423,7 +423,7 @@ impl PolarsReportBuilder {
     pub fn get_time_by_hours(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(
@@ -471,7 +471,7 @@ impl PolarsReportBuilder {
     pub fn get_late_nights(&self) -> DataFrame {
         let lf = self.df.clone().lazy();
 
-        let time_out = self.time_out;
+        let time_out = self.timeout;
 
         let out = lf
             .filter(

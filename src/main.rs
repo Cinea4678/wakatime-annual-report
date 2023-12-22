@@ -30,7 +30,7 @@ struct Args {
 
     /// Timeout of the WakaTime's time calculating. See WakaTime's FAQ for more info.
     #[arg(long = "timeout", short, default_value = "900.0")]
-    time_out: f64,
+    timeout: f64,
 
     /// The host address of the web server
     #[arg(long, default_value = "127.0.0.1")]
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
 
     println!("  {} If you are not in China, remember to configure the time zone in the arguments!", "Tips".green());
 
-    let data = get_analyses_report_data(data, year, args.time_zone, args.time_out);
+    let data = get_analyses_report_data(data, year, args.time_zone, args.timeout);
 
     if args.no_serve {
         serde_json::to_writer(File::create("./output.json")?, &data)?;
